@@ -13,6 +13,11 @@ In addition to the subset of the built-in Redis commands, there are 2 additional
 
 For the real Redis, checkout the [redis-streams](https://github.com/4front/redis-streams) package augments `RedisClient` with these same functions.
 
+## Installation
+~~~
+npm install memory-cache-stream
+~~~
+
 ## Usage
 
 ~~~js
