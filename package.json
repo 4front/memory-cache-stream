@@ -1,0 +1,35 @@
+{
+  "name": "memory-cache-stream",
+  "version": "1.0.0",
+  "description": "In-memory cache modeled after node_redis api with additional streaming support.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec --bail --check-leaks test/",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
+    "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/"
+  },
+  "keywords": [
+    "memory",
+    "cache",
+    "streams",
+    "redis"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dvonlehman/memory-cache-stream"
+  },
+  "author": "David Von Lehman (https://github.com/dvonlehman)",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^3.3.1",
+    "through2": "^0.6.3"
+  },
+  "devDependencies": {
+    "istanbul": "^0.3.6",
+    "mocha": "^2.1.0",
+    "sinon": "^1.12.2"
+  }
+}
