@@ -27,7 +27,7 @@ describe('memoryCache()', function() {
   it('exists of expired key returns 0', function() {
     var key = 'asdfsadf';
     cache.setex(key, -1, 'asdfasdf');
-    assert.equal(cache.exists(key), 0);
+    assert.equal(cache.exists(key), false);
   });
 
   it('get of expired key is undefined', function() {
@@ -38,7 +38,7 @@ describe('memoryCache()', function() {
     clock.tick(200 * 1000);
 
     assert.ok(_.isUndefined(cache.get(key)));
-    assert.equal(cache.exists(key), 0);
+    assert.equal(cache.exists(key), false);
   });
 
   it('ttl of not expiring object', function() {
@@ -84,7 +84,7 @@ describe('memoryCache()', function() {
   it('set async', function(done) {
     var key = 'asdfsdf';
     cache.set(key, 'asdasg', function() {
-      assert.equal(cache.exists(key), 1);
+      assert.equal(cache.exists(key), true);
       done();
     });
   });
@@ -94,7 +94,7 @@ describe('memoryCache()', function() {
     cache.set(key, '245ertert');
 
     cache.exists(key, function(err, exists) {
-      assert.equal(exists, 1);
+      assert.equal(exists, true);
       done();
     });
   });
@@ -110,7 +110,7 @@ describe('memoryCache()', function() {
     var key = 'asdfasdf';
     cache.set(key, 'asdfasdfds');
     cache.del(key, function() {
-      assert.equal(cache.exists(key), 0);
+      assert.equal(cache.exists(key), false);
       done();  
     });
   });
@@ -144,7 +144,7 @@ describe('memoryCache()', function() {
       out += chunk;
     }).on('end', function() {
       assert.equal(out, value);
-      assert.equal(cache.exists(key), 1);
+      assert.equal(cache.exists(key), true);
       done();
     }); 
   });

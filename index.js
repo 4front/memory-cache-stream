@@ -52,13 +52,13 @@ module.exports = function() {
     var exists;
     var entry = _cache[key];
     if (!entry)
-      exists = 0;
+      exists = false;
     else if (isExpired(entry)) {
       _cache[key] = undefined;
-      exists = 0;
+      exists = false;
     }
     else
-      exists = 1;
+      exists = true;
 
     if (_.isFunction(callback)) {
       setTimeout(function() {
