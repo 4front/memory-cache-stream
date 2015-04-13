@@ -9,13 +9,13 @@ In-memory cache implementing a subset of the [node-redis](https://github.com/mra
 
 This cache isn't really intended for production scenarios, but is suitable for use in place of `node_redis` for development environments and unit tests.
 
-In addition to the subset of the built-in Redis commands, there are 2 additional functions: `readStream` and `writeThrough` that are used to stream data into and out of the cache. Although these are purely for backwards API compatibility since the cached strings are already in memory. 
+In addition to the subset of the built-in Redis commands, there are 3 additional functions: `readStream`, `writeStream`, and `writeThrough` that are used to stream data into and out of the cache. Although these are purely for backwards API compatibility since the cached strings are already in memory.
 
 For the real Redis, checkout the [redis-streams](https://github.com/4front/redis-streams) package augments `RedisClient` with these same functions.
 
 ## Installation
 ~~~
-npm install memory-cache-stream
+npm install memory-cache-stream 
 ~~~
 
 ## Usage
@@ -34,8 +34,13 @@ memoryCache.get(key, function(err, data) {
 // Pipe out of the cache
 memoryCache.readStream(key)
 	.pipe(process.stdout);
-	
-// Pipe into the cache and out to stdout
+
+// Pipe into a cache
+fs.createReadStream('file.txt')
+	.pipe(memoryCache.writeStream(key, 60))
+	.on('finish', done);
+
+// Pipe into the cache and through to stdout
 fs.createReadStream('file.txt')
 	.pipe(memoryCache.writeThrough(key, 60))
 	.pipe(process.stdout);

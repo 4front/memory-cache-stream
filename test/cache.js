@@ -3,6 +3,8 @@ var stream = require('stream');
 var _ = require('lodash');
 var through2 = require('through2');
 var sinon = require('sinon');
+var sbuff = require('simple-bufferstream');
+var loremIpsum = require('lorem-ipsum');
 var memoryCache = require('..');
 
 describe('memoryCache()', function() {
@@ -108,44 +110,58 @@ describe('memoryCache()', function() {
 
   it('del async', function(done) {
     var key = 'asdfasdf';
-    cache.set(key, 'asdfasdfds');
+    cache.set(key, loremIpsum());
     cache.del(key, function() {
       assert.equal(cache.exists(key), false);
-      done();  
+      done();
     });
   });
 
   it('readStream', function(done) {
-    var key = 'asdfsdf', value='sth4iotiortre';
+    var key = 'asdfsdf', value=loremIpsum();
     cache.set(key, value);
 
     var out = '';
     cache.readStream(key)
-      .pipe(through2(function(chunk, enc, cb) {
+      .on('data', function(chunk) {
         out += chunk;
-        cb();
-      }, function(cb) {
+      })
+      .on('end', function() {
         assert.equal(out, value);
         done();
-      }));
+      });
   });
 
   it('writeThrough', function() {
-    var key = 'asdfasdfsd', value= '34534534fsdf';
-
-    var rs = stream.Readable();
-    rs._read = function () {
-      rs.push(value);
-      rs.push(null);
-    };
+    var key = 'asdfasdfsd', value= loremIpsum();
 
     var out = '';
-    rs.pipe(cache.writeThrough(key, 10)).on('data', function(chunk) {
+    sbuff(value).pipe(cache.writeThrough(key, 10))
+    .on('data', function(chunk) {
       out += chunk;
     }).on('end', function() {
       assert.equal(out, value);
       assert.equal(cache.exists(key), true);
       done();
-    }); 
+    });
+  });
+
+  it('writeStream', function(done) {
+    var data = loremIpsum({count: 3, units: 'sentences'});
+    var key = "asdfaf";
+
+    sbuff(data)
+      .pipe(cache.writeStream(key, 30))
+      .on('finish', function() {
+        var output = '';
+        cache.readStream(key)
+          .on('data', function(chunk) {
+            output += chunk;
+          })
+          .on('end', function() {
+            assert.equal(output, data);
+            done();
+          })
+      });
   });
 });

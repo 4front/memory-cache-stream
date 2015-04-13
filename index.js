@@ -2,7 +2,7 @@ var stream = require('stream');
 var through2 = require('through2');
 var _ = require('lodash');
 
-// Simple memory cache 
+// Simple memory cache
 module.exports = function() {
   var _cache = {};
   var exports = {};
@@ -32,7 +32,7 @@ module.exports = function() {
   };
 
   exports.setex = function(key, seconds, value, callback) {
-    _cache[key] = { 
+    _cache[key] = {
       value: value,
       expires: new Date().getTime() + seconds * 1000
     };
@@ -43,7 +43,7 @@ module.exports = function() {
 
   exports.del = function(key, callback) {
     _cache[key] = undefined;
-    
+
     if (_.isFunction(callback))
       setTimeout(callback, 0);
   };
@@ -102,7 +102,7 @@ module.exports = function() {
       setTimeout(callback, 0);
   };
 
-  // Simulate the augmented stream functions from 
+  // Simulate the augmented stream functions from
   // https://github.com/4front/redis-streams
   exports.readStream = function(key) {
     var entry = _cache[key], value;
@@ -135,6 +135,19 @@ module.exports = function() {
         entry.expires = new Date().getTime() + seconds * 1000;
       _cache[key] = entry;
     });
+  };
+
+  exports.writeStream = function(key, ttl) {
+    var writeableStream = new stream.Writable();
+    var entry = _cache[key] = {value: ''};
+    entry.expires = new Date().getTime() + ttl * 1000;
+
+    writeableStream._write = function (chunk, encoding, done) {
+      entry.value += chunk.toString();
+      done();
+    };
+
+    return writeableStream;
   };
 
   return exports;
