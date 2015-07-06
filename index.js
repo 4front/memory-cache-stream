@@ -129,11 +129,13 @@ module.exports = function() {
     return through2(function(chunk, enc, callback) {
       value += chunk;
       this.push(chunk);
+      callback();
     }, function(callback) {
       var entry = {value: value};
       if (seconds)
         entry.expires = new Date().getTime() + seconds * 1000;
       _cache[key] = entry;
+      callback();
     });
   };
 

@@ -4,6 +4,8 @@ var _ = require('lodash');
 var through2 = require('through2');
 var sinon = require('sinon');
 var sbuff = require('simple-bufferstream');
+var express = require('express');
+var supertest = require('supertest');
 var loremIpsum = require('lorem-ipsum');
 var memoryCache = require('..');
 
@@ -132,18 +134,20 @@ describe('memoryCache()', function() {
       });
   });
 
-  it('writeThrough', function() {
+  it('writeThrough', function(done) {
     var key = 'asdfasdfsd', value= loremIpsum();
 
     var out = '';
-    sbuff(value).pipe(cache.writeThrough(key, 10))
-    .on('data', function(chunk) {
-      out += chunk;
-    }).on('end', function() {
-      assert.equal(out, value);
-      assert.equal(cache.exists(key), true);
-      done();
-    });
+    sbuff(value)
+      .pipe(cache.writeThrough(key, 10))
+      .pipe(through2())
+      .on('data', function(chunk) {
+        out += chunk;
+      }).on('end', function() {
+        assert.equal(out, value);
+        assert.equal(cache.exists(key), true);
+        done();
+      });
   });
 
   it('writeStream', function(done) {
@@ -163,5 +167,44 @@ describe('memoryCache()', function() {
             done();
           })
       });
+  });
+
+  it('write to cache and pipe to server response', function(done) {
+    var server = express();
+    var data = loremIpsum({count: 3, units: 'sentences'});
+    var key = "asdfaf";
+
+    server.get('/', function(req, res, next) {
+      sbuff(data)
+        .pipe(cache.writeThrough(key, 10))
+        .pipe(res);
+    });
+
+    supertest(server).get('/')
+      .expect(200)
+      .expect(function(res) {
+        assert.equal(cache.get(key), data);
+        assert.equal(res.text, data);
+      })
+      .end(done);
+  });
+
+  it('read from cache and pipe to server response', function(done) {
+    var server = express();
+    var data = loremIpsum({count: 3, units: 'sentences'});
+    var key = "asdfaf";
+
+    cache.set(key, data);
+
+    server.get('/', function(req, res, next) {
+      cache.readStream(key).pipe(res);
+    });
+
+    supertest(server).get('/')
+      .expect(200)
+      .expect(function(res) {
+        assert.equal(res.text, data);
+      })
+      .end(done);
   });
 });
