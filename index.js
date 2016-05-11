@@ -115,7 +115,14 @@ module.exports = function() {
   }
 
   exports.hgetall = function(key, callback) {
-    callback(null, _cache[key]);
+    var hash = _cache[key];
+    if (_.isFunction(callback)) {
+      setTimeout(function() {
+        callback(null, hash);
+      }, 0);
+    } else {
+      return hash;
+    }
   };
 
   // Simulate the augmented stream functions from
