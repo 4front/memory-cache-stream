@@ -119,6 +119,16 @@ describe('memoryCache()', function() {
     });
   });
 
+  it('hmset', function(done) {
+    var key = 'sfgdj';
+    cache.hmset([key, 'value1', 'foo', 'value2', 5]);
+    cache.hgetall(key, function(err, hash) {
+      if (err) return done(err);
+      assert.deepEqual(hash, {value1: 'foo', value2: 5});
+      done();
+    });
+  });
+
   it('readStream', function(done) {
     var key = 'asdfsdf', value=loremIpsum();
     cache.set(key, value);

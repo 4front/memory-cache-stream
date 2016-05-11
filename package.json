@@ -1,6 +1,6 @@
 {
   "name": "memory-cache-stream",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "In-memory cache modeled after node_redis api with additional streaming support.",
   "main": "index.js",
   "directories": {

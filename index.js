@@ -102,6 +102,22 @@ module.exports = function() {
       setTimeout(callback, 0);
   };
 
+  exports.hmset = function(args) {
+    debugger;
+    var key = args[0];
+    var hash = _cache[key];
+    if (!hash) hash = {};
+
+    for (var i = 1; i < args.length; i = i + 2) {
+      hash[args[i]] = args[i+1];
+    }
+    _cache[key] = hash;
+  }
+
+  exports.hgetall = function(key, callback) {
+    callback(null, _cache[key]);
+  };
+
   // Simulate the augmented stream functions from
   // https://github.com/4front/redis-streams
   exports.readStream = function(key) {
