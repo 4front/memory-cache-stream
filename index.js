@@ -152,6 +152,10 @@ module.exports = function() {
     return writeableStream;
   };
 
+  exports.keys = function() {
+    return _.keys(_cache);
+  }
+
   return exports;
 
   function isExpired(entry) {
