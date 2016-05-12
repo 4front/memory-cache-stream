@@ -107,6 +107,7 @@ module.exports = function() {
   exports.hmset = function(args) {
     var key = args[0];
     var entry = _cache[key];
+    var hash;
     if (entry) {
       hash = entry.value;
     } else {
