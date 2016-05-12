@@ -1,6 +1,8 @@
 var stream = require('stream');
 var through2 = require('through2');
-var _ = require('lodash');
+var isFunction = require('lodash.isfunction');
+var isUndefined = require('lodash.isundefined');
+var keys = require('lodash.keys');
 
 // Simple memory cache
 module.exports = function() {
@@ -15,7 +17,7 @@ module.exports = function() {
     }
 
     var value = entry ? entry.value : undefined;
-    if (_.isFunction(callback)) {
+    if (isFunction(callback)) {
       setTimeout(function() {
         callback(null, value);
       });
@@ -27,7 +29,7 @@ module.exports = function() {
   exports.set = function(key, value, callback) {
     _cache[key] = {value:value};
 
-    if (_.isFunction(callback))
+    if (isFunction(callback))
       setTimeout(callback, 0);
   };
 
@@ -37,14 +39,14 @@ module.exports = function() {
       expires: new Date().getTime() + seconds * 1000
     };
 
-    if (_.isFunction(callback))
+    if (isFunction(callback))
       setTimeout(callback, 0);
   };
 
   exports.del = function(key, callback) {
     _cache[key] = undefined;
 
-    if (_.isFunction(callback))
+    if (isFunction(callback))
       setTimeout(callback, 0);
   };
 
@@ -60,7 +62,7 @@ module.exports = function() {
     else
       exists = true;
 
-    if (_.isFunction(callback)) {
+    if (isFunction(callback)) {
       setTimeout(function() {
         callback(null, exists);
       });
@@ -75,9 +77,9 @@ module.exports = function() {
     // The command returns -1 if the key exists but has no associated expire.
     var entry = _cache[key];
     var ttl;
-    if (_.isUndefined(entry))
+    if (isUndefined(entry))
       ttl = -2;
-    else if (_.isUndefined(entry.expires))
+    else if (isUndefined(entry.expires))
       ttl = -1;
     else {
       ttl = Math.round((entry.expires - new Date().getTime()) / 1000);
@@ -87,7 +89,7 @@ module.exports = function() {
       }
     }
 
-    if (_.isFunction(callback)) {
+    if (isFunction(callback)) {
       setTimeout(function() {
         callback(null, ttl);
       }, 0);
@@ -98,25 +100,30 @@ module.exports = function() {
 
   exports.flushall = function(callback) {
     _cache = {};
-    if (_.isFunction(callback))
+    if (isFunction(callback))
       setTimeout(callback, 0);
   };
 
   exports.hmset = function(args) {
-    debugger;
     var key = args[0];
-    var hash = _cache[key];
-    if (!hash) hash = {};
+    var entry = _cache[key];
+    if (entry) {
+      hash = entry.value;
+    } else {
+      hash = {};
+      _cache[key] = {value: hash};
+    }
 
     for (var i = 1; i < args.length; i = i + 2) {
       hash[args[i]] = args[i+1];
     }
-    _cache[key] = hash;
   }
 
   exports.hgetall = function(key, callback) {
-    var hash = _cache[key];
-    if (_.isFunction(callback)) {
+    var entry = _cache[key];
+    var hash = entry ? entry.value : null;
+
+    if (isFunction(callback)) {
       setTimeout(function() {
         callback(null, hash);
       }, 0);
@@ -148,9 +155,9 @@ module.exports = function() {
   };
 
   exports.writeThrough = function(key, seconds) {
-    var value = '';
+    var value = new Buffer(0);
     return through2(function(chunk, enc, callback) {
-      value += chunk;
+      value = Buffer.concat([value, chunk]);
       this.push(chunk);
       callback();
     }, function(callback) {
@@ -164,11 +171,11 @@ module.exports = function() {
 
   exports.writeStream = function(key, ttl) {
     var writeableStream = new stream.Writable();
-    var entry = _cache[key] = {value: ''};
+    var entry = _cache[key] = {value: new Buffer(0)};
     entry.expires = new Date().getTime() + ttl * 1000;
 
     writeableStream._write = function (chunk, encoding, done) {
-      entry.value += chunk.toString();
+      entry.value = Buffer.concat([entry.value, chunk]);
       done();
     };
 
@@ -176,13 +183,13 @@ module.exports = function() {
   };
 
   exports.keys = function() {
-    return _.keys(_cache);
+    return keys(_cache);
   }
 
   return exports;
 
   function isExpired(entry) {
-    if (_.isUndefined(entry.expires))
+    if (isUndefined(entry.expires))
       return false;
 
     return new Date().getTime() >  entry.expires;

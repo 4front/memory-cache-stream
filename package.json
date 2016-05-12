@@ -1,6 +1,6 @@
 {
   "name": "memory-cache-stream",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "In-memory cache modeled after node_redis api with additional streaming support.",
   "main": "index.js",
   "directories": {
@@ -24,7 +24,9 @@
   "author": "David Von Lehman (https://github.com/dvonlehman)",
   "license": "MIT",
   "dependencies": {
-    "lodash": "^3.3.1",
+    "lodash.isfunction": "^3.0.8",
+    "lodash.isundefined": "^3.0.1",
+    "lodash.keys": "^4.0.6",
     "through2": "^0.6.3"
   },
   "devDependencies": {
