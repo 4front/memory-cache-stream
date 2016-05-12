@@ -1,12 +1,12 @@
 var assert = require('assert');
 var stream = require('stream');
-var _ = require('lodash');
 var through2 = require('through2');
 var sinon = require('sinon');
 var sbuff = require('simple-bufferstream');
 var express = require('express');
 var supertest = require('supertest');
 var loremIpsum = require('lorem-ipsum');
+var isUndefined = require('lodash.isundefined');
 var memoryCache = require('..');
 
 describe('memoryCache()', function() {
@@ -41,7 +41,7 @@ describe('memoryCache()', function() {
     clock = sinon.useFakeTimers(Date.now(), 'Date');
     clock.tick(200 * 1000);
 
-    assert.ok(_.isUndefined(cache.get(key)));
+    assert.ok(isUndefined(cache.get(key)));
     assert.equal(cache.exists(key), false);
   });
 
